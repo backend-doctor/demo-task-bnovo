@@ -1,0 +1,53 @@
+services:
+    app:
+        build:
+            args:
+                user: ${USER}
+                uid: ${UID:-1000}
+                group: ${GROUP:-1000}
+            context: .
+            dockerfile: .docker/app.dockerfile
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        restart: unless-stopped
+        ports:
+            - 5173:5173
+        depends_on:
+            - db
+        volumes:
+            - .:/var/www/html:delegated
+        networks:
+            - network
+    nginx:
+        image: nginx:1.17-alpine
+        restart: unless-stopped
+        depends_on:
+            - app
+        ports:
+            - "58080:80"
+        volumes:
+            - .:/var/www/html
+            - ./.docker/nginx/conf.d:/etc/nginx/conf.d
+            - ./.docker/nginx/log:/var/log/nginx
+        networks:
+            - network
+    db:
+        image: 'postgres'
+        restart: unless-stopped
+        ports:
+            - '${FORWARD_DB_PORT:-5432}:5432'
+        environment:
+            POSTGRES_DB: '${DB_DATABASE}'
+            POSTGRES_USER: '${DB_USERNAME}'
+            POSTGRES_PASSWORD: '${DB_PASSWORD}'
+        volumes:
+            - '.:/var/www/html'
+            - 'db_pgsql:/var/lib/pgsql'
+        networks:
+            - network
+networks:
+    network:
+        driver: bridge
+volumes:
+    db_pgsql:
+        driver: local
