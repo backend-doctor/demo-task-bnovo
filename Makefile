@@ -23,28 +23,5 @@ artisan-key-generate:
 	${artisan} key:generate
 artisan-storage-link:
 	([ -L "public/storage" ] && rm -r public/storage) && ([ -d "storage/app/public" ] || mkdir storage/app/public) && ${artisan} storage:link
-m-seed: m-wipe
-	${artisan} db:wipe && ${artisan} migrate && ${artisan} db:seed
 sh:
 	docker compose exec app sh
-m-resource:
-	docker compose exec app php artisan moonshine:resource %
-
-m-wipe:
-	${artisan} db:wipe
-route-list:
-	${artisan} route:list > routes.txt
-full-cache:
-	${artisan} optimize:clear
-#route
-r-cache:
-	${artisan} route:cache
-#config
-c-cache:
-	${artisan} config:cache
-migrate:
-	${artisan} migrate
-tinker:
-	${artisan} tinker
-docker-stop:
-	docker compose stop
